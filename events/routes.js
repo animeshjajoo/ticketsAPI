@@ -2,6 +2,34 @@ const express = require('express');
 const router = express.Router();
 
 const { getEventModel } = require('../common/models/Event');
+const { getVenueModel } = require('../common/models/Venue');
+
+async function isVenueFree(venueID,start,end){
+
+    try{
+        // getting venue timings array
+        const venue = await Venue.findByPk(venueID);
+        const arr = venue.timings;
+
+        if (!Array.isArray(arr)) {
+            throw new Error('Invalid timings array');
+        }
+        if (start < 0 || end > arr.length || start >= end) {
+            throw new Error('Invalid start or end time');
+        }
+
+        for(let i = start; i<end; i++){
+            if(arr[i] != 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    catch(error){
+        res.status(400).json({ message: error.message });
+    }
+}
 
 //Post
 router.post('/', async (req, res) => {
@@ -15,11 +43,22 @@ router.post('/', async (req, res) => {
         ticketsSold: req.body.ticketsSold
     }
 
-    // add logic for venue clashes
     try {
         const Event = getEventModel();
-        const dataToSave = await Event.create(data);
-        res.status(200).json(dataToSave);
+        const Venue = getVenueModel();
+
+        const venue_data = await Venue.findByPk(req.body.venueID);
+        if(!venue_data){
+            res.status(404).json({ message: "Venue not found" });
+        }
+
+        if(isVenueFree(venue_data.timings, req.body.startTime, req.body.endTime)){
+            const dataToSave = await Event.create(data);
+            res.status(200).json(dataToSave);
+        }
+        else{
+            res.status(404).json({ message: "Requested time slot not available" });
+        }
     } 
     catch (error) {
         res.status(400).json({ message: error.message });
@@ -59,28 +98,30 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const Event = getEventModel();
-        const id = req.params.eventID;
+        const eventID = req.params.eventID;
+        const venueID = req.params.venueID;
 
         if (!(await Event.findByPk(req.params.eventID))) {
             res.status(404).json({ message: "Event not found" });
         } 
+        const venue_data = await Venue.findByPk(req.body.venueID);
+        if(!venue_data){
+            res.status(404).json({ message: "Venue not found" });
+        }
 
-        const updatedData = req.body;    
-        const cnt = await User.update(updatedData, {
-          where: { id },
-          returning: true,
-        });
-
-        console.log(cnt);
-        // console.log(updatedRows[0]);
-    
-        if (cnt[1] > 0) {
+        // update only if venue is free
+        if(isVenueFree(venue_data.timings, req.body.startTime, req.body.endTime)){
+            const updatedData = req.body;    
+            const cnt = await User.update(updatedData, {
+            where: { id },
+            returning: true,
+            });
             const data = await User.findByPk(req.params.id);
             res.json(data)
-        } 
-        else {
-            // poorana data and naya data compare karke check karna
-          res.status(404).json({ message: "Event not updated" });
+
+        }
+        else{
+            res.status(404).json({ message: "Requested time slot not available" });
         }
       } 
       catch (error) {
@@ -106,5 +147,4 @@ router.delete('/:id', async (req, res) => {
         res.status(400).json({ message: error.message })
     }
 })
-
 module.exports = router;

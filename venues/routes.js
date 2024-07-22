@@ -3,6 +3,17 @@ const router = express.Router();
 
 const { getVenueModel } = require('../common/models/Venue');
 
+function checkTimings(arr1, arr2){
+
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr[i] == 1 && arr2[i] != 0) {
+          return false; // new venue not free for event in old venue
+        }
+    }
+
+    return true;
+}
+
 //Post
 router.post('/', async (req, res) => {
     const data = {
