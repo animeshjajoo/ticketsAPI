@@ -56,7 +56,37 @@ router.get('/:id', async (req, res) => {
 
 // need to add -> only update if schedule/venue is free at updated time
 // Update
+router.put('/:id', async (req, res) => {
+    try {
+        const Event = getEventModel();
+        const id = req.params.eventID;
 
+        if (!(await Event.findByPk(req.params.eventID))) {
+            res.status(404).json({ message: "Event not found" });
+        } 
+
+        const updatedData = req.body;    
+        const cnt = await User.update(updatedData, {
+          where: { id },
+          returning: true,
+        });
+
+        console.log(cnt);
+        // console.log(updatedRows[0]);
+    
+        if (cnt[1] > 0) {
+            const data = await User.findByPk(req.params.id);
+            res.json(data)
+        } 
+        else {
+            // poorana data and naya data compare karke check karna
+          res.status(404).json({ message: "Event not updated" });
+        }
+      } 
+      catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+})
 
 // Delete
 router.delete('/:id', async (req, res) => {

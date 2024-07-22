@@ -12,7 +12,6 @@ router.post('/', async (req, res) => {
         lastName: req.body.lastName,
         age: req.body.age
     }
-
     try {
         const User = getUserModel();
         const dataToSave = await User.create(data);
@@ -76,6 +75,7 @@ router.put('/:id', async (req, res) => {
         } 
         else {
             // poorana data and naya data compare karke check karna
+            // do I really need this? if update same hi kar rhe hai
           res.status(404).json({ message: "User not updated" });
         }
       } 
@@ -83,7 +83,6 @@ router.put('/:id', async (req, res) => {
         res.status(500).json({ message: error.message });
       }
 })
-
 // look for patch, user not updated wala scene
 
 //Delete by ID
@@ -104,5 +103,6 @@ router.delete('/:id', async (req, res) => {
         res.status(400).json({ message: error.message })
     }
 })
+// Delete Tickets when del user
 
 module.exports = router;
