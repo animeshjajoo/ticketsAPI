@@ -7,22 +7,29 @@ const { getTicketModel } = require('../common/models/Ticket');
 
 function checkTimings(arr1, arr2){
 
-    for (let i = 0; i < arr1.length; i++) {
-        if (arr1[i] != 0 && arr2[i] != 0) {
-          return false; // new venue not free for event in old venue
-        }
-    }
+    // for (let i = 0; i < arr1.length; i++) {
+    //     if (arr1[i] != 0 && arr2[i] != 0) {
+    //       return false; // new venue not free for event in old venue
+    //     }
+    // }
 
-    return true;
+    const isNotFree = arr1.some((value, index) => arr1[index] !== 0 && arr2[index] !== 0);
+    return !(isNotFree);
 }
 
 function updateTimings(arr1, arr2){
-    for (let i = 0; i < arr1.length; i++) {
-        if (arr1[i] == 1) {
-          arr2[i] = 1;
-        }
-    }
 
+    // for (let i = 0; i < arr1.length; i++) {
+    //     if (arr1[i] == 1) {
+    //       arr2[i] = 1;
+    //     }
+    // }
+
+    arr1.forEach((value, index) => {
+        if (value == 1) {
+            arr2[index] = 1;
+        }
+    });
     return arr2;
 }
 
@@ -118,9 +125,10 @@ router.put('/:id', async (req, res) => {
             returning: true,
             });
 
-            for(let i = 0; i<12; i++){
-                old_timings[i] = 0;
-            }
+            // for(let i = 0; i<12; i++){
+            //     old_timings[i] = 0;
+            // }
+            old_timings.fill(0, 0, old_timings.length);
             const old_updatedData = {
                 venueID: req.params.id,
                 timings: old_timings

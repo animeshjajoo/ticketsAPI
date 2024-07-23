@@ -15,10 +15,14 @@ function isVenueFree(timings,start,end){
             throw new Error('Invalid start or end time');
         }
 
-        for(let i = start; i<end; i++){
-            if(timings[i] != 0) {
-                return false;
-            }
+        // for(let i = start; i<end; i++){
+        //     if(timings[i] != 0) {
+        //         return false;
+        //     }
+        // }
+
+        if (timings.slice(start, end).some(time => time != 0)) {
+            return false;
         }
 
         return true;
@@ -153,9 +157,11 @@ router.put('/:id', async (req, res) => {
             returning: true,
             });
 
-            for(let i = req.body.startTime; i<req.body.endTime; i++){
-                timings[i] = 1;
-            }
+            // for(let i = req.body.startTime; i<req.body.endTime; i++){
+            //     timings[i] = 1;
+            // }
+            timings.fill(1, req.body.startTime, req.body.endTime);
+
             // await venue_data.save();
             const updatedVenueData = {
                 venueID: req.body.venueID,
@@ -191,11 +197,14 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const Event = getEventModel();
+        const Venue = getVenueModel();
         const Ticket = getTicketModel();
         const id = req.params.id;
         const data = await Event.findByPk(id);
+        const venue_data = await Venue.findByPk(data.venueID);
 
         if(data){
+            venue_data.timings.fill(0, data.startTime, data.endTime);
             await Event.destroy({ where: { eventID: id } });
             await Ticket.destroy({where: { eventID: id } });
             res.send(`Event with id ${data.eventID}:${data.eventName} has been deleted.`);
