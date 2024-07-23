@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 const UserRoutes = require("./users/routes");
 const EventRoutes = require("./events/routes");
 const VenueRoutes = require("./venues/routes");
+const TicketRoutes = require("./tickets/routes");
 
 // app.use(morgan("tiny"));
 // app.use(cors());
@@ -23,35 +24,50 @@ const sequelize = new Sequelize({
     storage: "./storage/data.db",
   });
 
+  const UserModel = require("./common/models/User");
+  UserModel.initialise(sequelize);
+  console.log(UserModel.getUserModel());
+
+  const EventModel = require("./common/models/Event");
+  EventModel.initialise(sequelize);
+  console.log(EventModel.getEventModel());
+
+  const VenueModel = require("./common/models/Venue");
+  VenueModel.initialise(sequelize);
+  console.log(VenueModel.getVenueModel());
+
+  const TicketModel = require("./common/models/Ticket");
+  TicketModel.initialise(sequelize);
+  console.log(TicketModel.getTicketModel());
+
 // Sequelize model imports
-
-// const UserModel = require("./common/models/User");
-// UserModel.initialise(sequelize);
-
-// console.log(UserModel.getUserModel());
-
 sequelize
-  .sync()
+  .sync({ force: true })
   .then(() => {
     console.log("Sequelize Initialised!");
 
-    const UserModel = require("./common/models/User");
-    UserModel.initialise(sequelize);
-    console.log(UserModel.getUserModel());
+    // const UserModel = require("./common/models/User");
+    // UserModel.initialise(sequelize);
+    // console.log(UserModel.getUserModel());
 
-    const EventModel = require("./common/models/Event");
-    EventModel.initialise(sequelize);
-    console.log(EventModel.getEventModel());
+    // const EventModel = require("./common/models/Event");
+    // EventModel.initialise(sequelize);
+    // console.log(EventModel.getEventModel());
 
-    const VenueModel = require("./common/models/Venue");
-    VenueModel.initialise(sequelize);
-    console.log(VenueModel.getVenueModel());
+    // const VenueModel = require("./common/models/Venue");
+    // VenueModel.initialise(sequelize);
+    // console.log(VenueModel.getVenueModel());
+
+    // const TicketModel = require("./common/models/Ticket");
+    // TicketModel.initialise(sequelize);
+    // console.log(TicketModel.getTicketModel());
 
     // Attaching the Authentication and User Routes to the app.
     // app.use("/", AuthorizationRoutes);
     app.use("/user", UserRoutes);
     app.use("/event", EventRoutes);
     app.use("/venue", VenueRoutes);
+    app.use("/ticket", TicketRoutes);
 
     app.listen(PORT, () => {
       console.log("Server Listening on PORT:", PORT);

@@ -8,7 +8,8 @@ const VenueModel = {
     primaryKey: true,
   },
   timings: {
-    type: DataTypes.ARRAY,
+    // type: DataTypes.ARRAY(DataTypes.INTEGER),  
+    type: DataTypes.JSON, 
     defaultValue: new Array(12).fill(0),
   },
 };
@@ -25,8 +26,7 @@ module.exports = {
 /*
 users: cannot buy more than max tickets, delete tickets bought when del user
 venue: venue shifting, delete events when deleting venue and then delete tickets
-events: book only if venue is free (0), delete tickets when deleting event 
-
+events: book only if venue is free (0), update only if venue/slot free, delete tickets when deleting event 
 assumptions: every user buys 1 ticket at a time, unit of time = 1hr, venue open for 12 hrs
 */
 

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { getTicketModel } = require('../common/models/Ticket');
+const { getEventModel } = require('../common/models/Event');
 
 //Post
 router.post('/', async (req, res) => {
@@ -13,8 +14,21 @@ router.post('/', async (req, res) => {
     }
     try {
         const Ticket = getTicketModel();
-        const dataToSave = await Ticket.create(data);
-        res.status(200).json(dataToSave);
+        const Event = getEventModel();
+        const event_data = await Event.findByPk(req.body.eventID);
+
+        if(!event_data){
+            res.status(404).json({ message: "Event not found" });
+        }
+        if(event_data.ticketsSold <= event_data.totalTickets){
+            const dataToSave = await Ticket.create(data);
+            event_data.ticketsSold++;
+            await event_data.save();
+            res.status(200).json(dataToSave);
+        }
+        else{
+            res.status(404).json({ message: "No Tickets left" });
+        }
     } 
     catch (error) {
         res.status(400).json({ message: error.message });
@@ -26,7 +40,7 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const Ticket = getTicketModel();
-        const data = await Ticket.findByPk(req.params.ticketID);
+        const data = await Ticket.findByPk(req.params.id);
         res.json(data)
     }
     catch (error) {
@@ -35,7 +49,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Get by event ID
-router.get('/all/:id', async (req, res) => {
+router.get('/all/:eventID', async (req, res) => {
     try {
         const Ticket = getTicketModel();
         const data = await Ticket.findAll({
@@ -54,14 +68,22 @@ router.get('/all/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const Ticket = getTicketModel();
-        const ticketID = req.params.ticketID;
-        const data = await User.findByPk(id)
+        const id = req.params.id;
+        const data = await Ticket.findByPk(id);
         if(data){
-            await Ticket.destroy({ where: { ticketID } });
+            const Event = getEventModel();
+            const event_data = await Event.findByPk(req.body.eventID);
+            if(!event_data){
+                res.status(404).json({ message: "Event/Event Tickets not found" });
+            }
+
+            await Ticket.destroy({ where: { ticketID: id } });
+            event_data.ticketsSold--;
+            await event_data.save();
             res.send(`Ticket with id ${data.ticketID} has been deleted.`);
         } 
         else{
-            res.status(404).json({ message: "Venue not found" });
+            res.status(404).json({ message: "Ticket not found" });
         }
     }
     catch (error) {
