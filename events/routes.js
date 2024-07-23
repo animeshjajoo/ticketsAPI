@@ -5,25 +5,18 @@ const { getEventModel } = require('../common/models/Event');
 const { getVenueModel } = require('../common/models/Venue');
 const { getTicketModel } = require('../common/models/Ticket');
 
-async function isVenueFree(venueID,start,end){
+function isVenueFree(timings,start,end){
 
     try{
-        // getting venue timings array
-        const venue = await Venue.findByPk(venueID);
-        const arr = venue.timings || [];
-        if (!Array.isArray(arr)) {
-            arr = JSON.parse(arr);
-        }
-
-        if (!Array.isArray(arr)) {
+        if (!Array.isArray(timings)) {
             throw new Error('Invalid timings array');
         }
-        if (start < 0 || end > arr.length || start >= end) {
+        if (start < 0 || end > 11 || start >= end) {
             throw new Error('Invalid start or end time');
         }
 
         for(let i = start; i<end; i++){
-            if(arr[i] != 0) {
+            if(timings[i] != 0) {
                 return false;
             }
         }
@@ -65,7 +58,7 @@ router.post('/', async (req, res) => {
             res.status(400).json({ message: 'Invalid timings array' });
         }
 
-        if(isVenueFree(req.body.venueID, req.body.startTime, req.body.endTime)){
+        if(isVenueFree(timings, req.body.startTime, req.body.endTime)){
             
             // update venue
             for(let i = req.body.startTime; i<req.body.endTime; i++){
@@ -156,7 +149,7 @@ router.put('/:id', async (req, res) => {
         if(isVenueFree(timings, req.body.startTime, req.body.endTime)){
             const updatedData = req.body;    
             const cnt = await Event.update(updatedData, {
-            where: { eventID : id },
+            where: { eventID : req.params.id },
             returning: true,
             });
 
@@ -178,7 +171,7 @@ router.put('/:id', async (req, res) => {
             const updatedCount = await Ticket.update(
                 { venueID: req.body.venueID }, 
                 {
-                where: { eventID: eventID }, 
+                where: { eventID: req.params.id }, 
                 }
             );
             
@@ -200,7 +193,7 @@ router.delete('/:id', async (req, res) => {
         const Event = getEventModel();
         const Ticket = getTicketModel();
         const id = req.params.id;
-        const data = await User.findByPk(id);
+        const data = await Event.findByPk(id);
 
         if(data){
             await Event.destroy({ where: { eventID: id } });

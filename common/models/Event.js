@@ -10,7 +10,6 @@ const EventModel = {
   eventName: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
   },
   venueID: {
     type: DataTypes.INTEGER,

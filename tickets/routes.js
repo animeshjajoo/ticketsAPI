@@ -3,24 +3,33 @@ const router = express.Router();
 
 const { getTicketModel } = require('../common/models/Ticket');
 const { getEventModel } = require('../common/models/Event');
+const { getUserModel } = require('../common/models/User');
 
 //Post
 router.post('/', async (req, res) => {
-    const data = {
-        ticketID: req.body.ticketID,
-        userID: req.body.userID,
-        eventID: req.body.eventID,
-        venueID: req.body.venueID
-    }
+    
     try {
         const Ticket = getTicketModel();
         const Event = getEventModel();
         const event_data = await Event.findByPk(req.body.eventID);
-
         if(!event_data){
             res.status(404).json({ message: "Event not found" });
         }
-        if(event_data.ticketsSold <= event_data.totalTickets){
+
+        const User = getUserModel();
+        const user_data = await Event.findByPk(req.body.userID);
+        if(!user_data){
+            res.status(404).json({ message: "User does not exist" });
+        }
+
+        const data = {
+            ticketID: req.body.ticketID,
+            userID: req.body.userID,
+            eventID: req.body.eventID,
+            venueID: event_data.venueID
+        }
+
+        if(event_data.ticketsSold < event_data.totalTickets){
             const dataToSave = await Ticket.create(data);
             event_data.ticketsSold++;
             await event_data.save();
@@ -72,7 +81,7 @@ router.delete('/:id', async (req, res) => {
         const data = await Ticket.findByPk(id);
         if(data){
             const Event = getEventModel();
-            const event_data = await Event.findByPk(req.body.eventID);
+            const event_data = await Event.findByPk(data.eventID);
             if(!event_data){
                 res.status(404).json({ message: "Event/Event Tickets not found" });
             }

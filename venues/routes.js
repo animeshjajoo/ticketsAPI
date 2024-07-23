@@ -8,7 +8,7 @@ const { getTicketModel } = require('../common/models/Ticket');
 function checkTimings(arr1, arr2){
 
     for (let i = 0; i < arr1.length; i++) {
-        if (arr[i] == 1 && arr2[i] != 0) {
+        if (arr1[i] != 0 && arr2[i] != 0) {
           return false; // new venue not free for event in old venue
         }
     }
@@ -18,7 +18,7 @@ function checkTimings(arr1, arr2){
 
 function updateTimings(arr1, arr2){
     for (let i = 0; i < arr1.length; i++) {
-        if (arr[i] == 1) {
+        if (arr1[i] == 1) {
           arr2[i] = 1;
         }
     }
@@ -76,6 +76,8 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const Venue = getVenueModel();
+        const Event = getEventModel();
+        const Ticket = getTicketModel();
 
         const old_venue_data = await Venue.findByPk(req.params.id)
         if (!old_venue_data) {
@@ -116,14 +118,35 @@ router.put('/:id', async (req, res) => {
             returning: true,
             });
 
-            // events update karna, tickets update karna
-            // transaction rollback -> syntax
-
-            for(let i = 0; i< old_venue_data.timings.length; i++){
-                old_venue_data.timings[i] = 0;
+            for(let i = 0; i<12; i++){
+                old_timings[i] = 0;
             }
-            await old_venue_data.save();
+            const old_updatedData = {
+                venueID: req.params.id,
+                timings: old_timings
+            }
 
+            const cnt2 = await Venue.update(old_updatedData, {
+            where: { venueID: req.params.id},
+            returning: true,
+            });
+
+            // Update tickets
+            const updateTickets = await Ticket.update(
+                { venueID: req.body.venueID }, 
+                {
+                where: { venueID: req.params.id }, 
+                }
+            );
+
+            // Update Events
+            const updateEvents = await Event.update(
+                { venueID: req.body.venueID }, 
+                {
+                where: { venueID: req.params.id }, 
+                }
+            );
+            
             const data = await Venue.findByPk(req.body.venueID);
             res.json(data)
         }

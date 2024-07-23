@@ -23,6 +23,13 @@ const UserModel = {
   age: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    validate: {
+      isPositive(value) {
+        if (value <= 17) {
+          throw new Error('Kindly ask an adult to register for you');
+        }
+      },
+    },
   },
 };
 
