@@ -190,4 +190,32 @@ router.delete('/:id', async (req, res) => {
     }
 })
 
+// router.delete('/:id', async (req, res) => {
+//     const t = await sequelize.transaction();
+//     try {
+//         const Venue = getVenueModel();
+//         const Event = getEventModel();
+//         const Ticket = getTicketModel();
+//         const id = req.params.id;
+
+//         const data = await Venue.findByPk(id, { transaction: t });
+//         if(data) {
+//             await Venue.destroy({ where: { venueID: id }, transaction: t });
+//             await Event.destroy({ where: { venueID: id }, transaction: t });
+//             await Ticket.destroy({ where: { venueID: id }, transaction: t });
+
+//             await t.commit();
+//             res.send(`Venue with id ${data.venueID} has been deleted.`);
+//         } 
+//         else {
+//             await t.rollback();
+//             res.status(404).json({ message: "Venue not found" });
+//         }
+//     }
+//     catch (error) {
+//         await t.rollback();
+//         res.status(400).json({ message: error.message });
+//     }
+// });
+
 module.exports = router;
