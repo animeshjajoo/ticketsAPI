@@ -10,8 +10,8 @@ A REST API to manage users, events, venues and tickets.
 
 ## Assumptions
 - A user can buy 1 ticket at a time
-- The minimum unit of time is 1
-- The Venues are available from 12PM (0) to 12AM (0)
+- The minimum unit of time is 1 hour
+- The Venues are available from 12PM (0/ 1st hour) to 12AM (11/ 12th hour)
 
 ## Known Bugs
 - Creating an Event without a Venue [crashes app]
