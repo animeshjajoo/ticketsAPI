@@ -67,6 +67,8 @@ router.put('/:id', async (req, res) => {
           returning: true,
         });
 
+        // [cnt, rows]
+
         console.log(cnt);
         // console.log(updatedRows[0]);
     
@@ -74,11 +76,7 @@ router.put('/:id', async (req, res) => {
             const data = await User.findByPk(req.params.id);
             res.json(data)
         // } 
-        // else {
-        //     // poorana data and naya data compare karke check karna
-        //     // do I really need this? if update same hi kar rhe hai
-        //   res.status(404).json({ message: "User not updated" });
-        // }
+
       } 
       catch (error) {
         res.status(500).json({ message: error.message });
